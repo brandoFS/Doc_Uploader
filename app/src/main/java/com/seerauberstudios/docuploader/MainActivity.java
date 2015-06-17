@@ -14,7 +14,10 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.parse.ParseAnalytics;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.seerauberstudios.docuploader.util.FileHelper;
 import com.seerauberstudios.docuploader.util.ParseConstants;
 
 import java.io.File;
@@ -140,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
                     return null;
                 }
                 Log.d(TAG, "File: " + Uri.fromFile(mediaFile));
-                System.out.println("File: " + Uri.fromFile(mediaFile));
 
 
                 //create file URI
@@ -189,13 +191,20 @@ public class MainActivity extends AppCompatActivity {
                 mediaScanIntent.setData(MediaURI);
                 sendBroadcast(mediaScanIntent);
             }
-           // Intent recipientsIntent = new Intent(this, RecipientsActivity.class);
-           // recipientsIntent.setData(MediaURI);
-           // String fileType = ParseConstants.TYPE_IMAGE;
+
+            ParseObject doc = new ParseObject("doc");
+            byte[] fileBytes = FileHelper.getByteArrayFromFile(this, MediaURI);
+            if(fileBytes == null){
+                //return null;
+            }
+
+            String fileName = MediaURI.getLastPathSegment();
+            ParseFile file = new ParseFile(fileName, fileBytes);
+            doc.add("document", file);
+
+            doc.saveInBackground();
 
 
-           // recipientsIntent.putExtra(ParseConstants.KEY_FILE_TYPE, fileType);
-            //startActivity(recipientsIntent);
         }
         else if (resultCode != RESULT_CANCELED){
             Toast.makeText(MainActivity.this, getString(R.string.error), Toast.LENGTH_LONG).show();
