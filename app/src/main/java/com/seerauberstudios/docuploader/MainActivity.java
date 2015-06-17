@@ -14,9 +14,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.parse.ParseAnalytics;
+import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.seerauberstudios.docuploader.util.FileHelper;
 import com.seerauberstudios.docuploader.util.ParseConstants;
 
@@ -39,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int FILE_SIZE_LIMIT = 1024*1024*10; //10mb limit
     protected Uri MediaURI;
 
+    ParseFile file;
+    ParseUser currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
 
-        ParseUser currentUser = ParseUser.getCurrentUser();
+       currentUser = ParseUser.getCurrentUser();
         if(currentUser == null) {
             navigateToLogin();
         }
@@ -192,17 +197,26 @@ public class MainActivity extends AppCompatActivity {
                 sendBroadcast(mediaScanIntent);
             }
 
-            ParseObject doc = new ParseObject("doc");
             byte[] fileBytes = FileHelper.getByteArrayFromFile(this, MediaURI);
             if(fileBytes == null){
+                System.out.println("Filebytes is NULL");
                 //return null;
             }
 
-            String fileName = MediaURI.getLastPathSegment();
-            ParseFile file = new ParseFile(fileName, fileBytes);
-            doc.add("document", file);
+            String fileName = "document.png";
+            file = new ParseFile(fileName, fileBytes);
+            file.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if(e == null){
+                        //Success
+                        uploadDoc(file);
+                        Toast.makeText(MainActivity.this, "Sucess FILE SAVED", Toast.LENGTH_LONG);
+                    }
+                }
+            });
 
-            doc.saveInBackground();
+
 
 
         }
@@ -213,6 +227,33 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+    }
+
+    private void uploadDoc(ParseFile fileForUpload) {
+        ParseObject doc = new ParseObject("doc");
+        doc.put(ParseConstants.KEY_USER_ID, currentUser.getObjectId());
+        doc.put(ParseConstants.KEY_USERNAME,currentUser.getUsername());
+        doc.add("document", fileForUpload);
+
+        doc.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if(e == null){
+                    //Success
+
+                    Toast.makeText(MainActivity.this, "Sucess", Toast.LENGTH_LONG);
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(getString(R.string.error))
+                            .setTitle(getString(R.string.sorry_title))
+                            .setPositiveButton(android.R.string.ok, null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            }
+        });
 
     }
 

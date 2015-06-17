@@ -28,11 +28,12 @@
         <item>Choose from Gallery</item>
     </array>
 
+    <!-- Error Messages -->
     <string name="storage_error">There was a problem accessing device\'s storage</string>
     <string name="error">Sorry! There was an Error!</string>
-    <string name="video_limit_message">The selected video must be less than 10MB</string>
     <string name="error_opening_file">There was a problem with the selected file</string>
     <string name="file_size_toolarge">The selected file is too large! Select a new file</string>
+    <string name="sorry_title">We\'re Sorry!</string>
 
 
 </resources>
