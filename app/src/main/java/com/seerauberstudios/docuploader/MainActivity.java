@@ -1,36 +1,52 @@
 package com.seerauberstudios.docuploader;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.internal.app.ToolbarActionBar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
+import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseAnalytics;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.seerauberstudios.docuploader.adapters.ListAdapter;
 import com.seerauberstudios.docuploader.util.FileHelper;
 import com.seerauberstudios.docuploader.util.ParseConstants;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 public class MainActivity extends AppCompatActivity {
+
+    @InjectView(R.id.mainactivity_recycler_view) RecyclerView recyclerView;;
+
 
     public final static String TAG = MainActivity.class.getSimpleName();
     public static final int TAKE_PHOTO_REQUEST = 0;
@@ -38,16 +54,24 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int MEDIA_TYPE_IMAGE = 4;
 
-    public static final int FILE_SIZE_LIMIT = 1024*1024*10; //10mb limit
     protected Uri MediaURI;
 
     ParseFile file;
     ParseUser currentUser;
 
+
+    private ListAdapter listAdapter;
+    private LinearLayoutManager linearLayoutManager;
+
+    protected ArrayList<ParseObject> Documents;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ButterKnife.inject(this); //inject our views
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
 
@@ -58,6 +82,23 @@ public class MainActivity extends AppCompatActivity {
         else{
             Log.i(TAG, currentUser.getUsername());
         }
+
+
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+
+        //attach layoutmanager to recyclerview
+       recyclerView.setLayoutManager(linearLayoutManager);
+
+       // retrieveDocuments();
+        // specify an adapter
+       // listAdapter = new ListAdapter(textPosts);
+        //recyclerView.setAdapter(listAdapter);
+
 
     }
 
@@ -203,8 +244,8 @@ public class MainActivity extends AppCompatActivity {
                 //return null;
             }
 
-            String fileName = "document.png";
-            file = new ParseFile(fileName, fileBytes);
+           // String fileName = "document";
+            file = new ParseFile(fileBytes);
             file.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
@@ -234,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         ParseObject doc = new ParseObject("doc");
         doc.put(ParseConstants.KEY_USER_ID, currentUser.getObjectId());
         doc.put(ParseConstants.KEY_USERNAME,currentUser.getUsername());
-        doc.add("document", fileForUpload);
+        doc.add(ParseConstants.KEY_FILE, fileForUpload);
 
         doc.saveInBackground(new SaveCallback() {
             @Override
@@ -256,5 +297,66 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //retrieveDocuments();
+
+    }
+
+  /*  private void retrieveDocuments() {
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("doc");
+        query.whereEqualTo(ParseConstants.KEY_USER_ID, ParseUser.getCurrentUser().getObjectId());
+        query.addDescendingOrder(ParseConstants.KEY_CREATED_AT);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> documents, ParseException e) {
+
+
+               /* if(swipeRefreshLayout.isRefreshing())
+                {
+                    swipeRefreshLayout.setRefreshing(false);
+                }*/
+
+            /*
+                if (e == null) {
+                    //success
+                   // Documents = documents;
+                    System.out.println("HERE!!!!!!!! ");
+                    ArrayList<ParseFile> docs = new ArrayList<ParseFile>(documents.size());
+                    int i = 0;
+                    for (ParseObject document : documents) {
+                        docs.add(document.getParseFile(ParseConstants.KEY_FILE));
+                        i++;
+                        System.out.println("HERE!!!!!!!! 2");
+
+                    }
+                    if(recyclerView.getAdapter() == null) {
+                        listAdapter = new ListAdapter(docs, getBaseContext());
+                        recyclerView.setAdapter(listAdapter);
+                        System.out.println("HERE!!!!!!!! 3");
+
+                    }
+                    else{
+                        //refill the adapter
+                        //recyclerView.getAdapter().notifyDataSetChanged();
+                        //((MessageAdapter)getListView().getAdapter()).refill(Messages);
+                    }
+
+                }
+
+            }
+        });
+    }*/
+
+    protected SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            //retrieveDocuments();
+
+        }
+    };
 
 }
