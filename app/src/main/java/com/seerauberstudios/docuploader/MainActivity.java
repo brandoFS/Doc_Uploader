@@ -63,8 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private ListAdapter listAdapter;
     private LinearLayoutManager linearLayoutManager;
 
-    protected ArrayList<ParseObject> Documents;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,8 +249,6 @@ public class MainActivity extends AppCompatActivity {
                 public void done(ParseException e) {
                     if(e == null){
                         //Success
-                        System.out.println("HERE!!!!!!!! 11111");
-                        Toast.makeText(MainActivity.this, "Sucess FILE SAVED", Toast.LENGTH_LONG);
                         uploadDoc(file);
                     }
                 }
@@ -283,9 +279,7 @@ public class MainActivity extends AppCompatActivity {
             public void done(ParseException e) {
                 if (e == null) {
                     //Success
-                    System.out.println("HERE!!!!!!!! ");
-
-                    Toast.makeText(MainActivity.this, "Sucess", Toast.LENGTH_LONG);
+                    Toast.makeText(MainActivity.this, R.string.upload_success_message, Toast.LENGTH_LONG);
                 } else {
                     System.out.println("EXCEPTION!!!!!!!! " + e.toString());
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -325,21 +319,15 @@ public class MainActivity extends AppCompatActivity {
 
                 if (e == null) {
                     //success
-                   // Documents = documents;
-                    System.out.println("HERE!!!!!!!! ");
                     ArrayList<ParseFile> docs = new ArrayList<ParseFile>(documents.size());
                     int i = 0;
                     for (ParseObject document : documents) {
                         docs.add(document.getParseFile("Document"));
                         i++;
-                        System.out.println("HERE!!!!!!!! 2");
-
                     }
                     if(recyclerView.getAdapter() == null) {
                         listAdapter = new ListAdapter(docs, getBaseContext());
                         recyclerView.setAdapter(listAdapter);
-                        System.out.println("HERE!!!!!!!! 3");
-
                     }
                     else{
                        // refill the adapter

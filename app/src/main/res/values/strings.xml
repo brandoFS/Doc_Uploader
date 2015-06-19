@@ -34,6 +34,7 @@
     <string name="error_opening_file">There was a problem with the selected file</string>
     <string name="file_size_toolarge">The selected file is too large! Select a new file</string>
     <string name="sorry_title">We\'re Sorry!</string>
+    <string name="upload_success_message">Document Uploaded, It will be Reviewed by a professional within 24 hours, Thank You!</string>
 
 
 </resources>
