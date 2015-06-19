@@ -244,15 +244,16 @@ public class MainActivity extends AppCompatActivity {
                 //return null;
             }
 
-           // String fileName = "document";
-            file = new ParseFile(fileBytes);
+            String fileName = "document.png";
+            file = new ParseFile(fileName, fileBytes);
             file.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
                     if(e == null){
                         //Success
-                        uploadDoc(file);
+                        System.out.println("HERE!!!!!!!! 11111");
                         Toast.makeText(MainActivity.this, "Sucess FILE SAVED", Toast.LENGTH_LONG);
+                        uploadDoc(file);
                     }
                 }
             });
@@ -271,21 +272,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void uploadDoc(ParseFile fileForUpload) {
+        private void uploadDoc(ParseFile fileForUpload) {
         ParseObject doc = new ParseObject("doc");
         doc.put(ParseConstants.KEY_USER_ID, currentUser.getObjectId());
         doc.put(ParseConstants.KEY_USERNAME,currentUser.getUsername());
-        doc.add(ParseConstants.KEY_FILE, fileForUpload);
+        doc.put("Document", fileForUpload);
 
         doc.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                if(e == null){
+                if (e == null) {
                     //Success
+                    System.out.println("HERE!!!!!!!! ");
 
                     Toast.makeText(MainActivity.this, "Sucess", Toast.LENGTH_LONG);
-                }
-                else{
+                } else {
+                    System.out.println("EXCEPTION!!!!!!!! " + e.toString());
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage(getString(R.string.error))
                             .setTitle(getString(R.string.sorry_title))
@@ -306,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-  /*  private void retrieveDocuments() {
+    private void retrieveDocuments() {
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("doc");
         query.whereEqualTo(ParseConstants.KEY_USER_ID, ParseUser.getCurrentUser().getObjectId());
         query.addDescendingOrder(ParseConstants.KEY_CREATED_AT);
@@ -320,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                     swipeRefreshLayout.setRefreshing(false);
                 }*/
 
-            /*
+
                 if (e == null) {
                     //success
                    // Documents = documents;
@@ -340,8 +342,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                     else{
-                        //refill the adapter
-                        //recyclerView.getAdapter().notifyDataSetChanged();
+                       // refill the adapter
+                        recyclerView.getAdapter().notifyDataSetChanged();
                         //((MessageAdapter)getListView().getAdapter()).refill(Messages);
                     }
 
@@ -349,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }*/
+    }
 
     protected SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
