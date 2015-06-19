@@ -40,7 +40,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             super(v);
 
             cardItemView = (CardView)v.findViewById(R.id.card_view);
-            textInput = (TextView)v.findViewById(R.id.listitem_text);
+           // textInput = (TextView)v.findViewById(R.id.listitem_text);
             docImageView = (ImageView)v.findViewById(R.id.listitem_image);
 
 
@@ -71,9 +71,9 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         Uri fileUri = Uri.parse(mDataset.get(position).getUrl());
-        Picasso.with(context1).load(fileUri.toString()).into(holder.docImageView);
-        holder.textInput.setText("HI!");
-        System.out.println("HERE!!!!!!!! 4");
+        Picasso.with(context1).load(fileUri.toString()).fit().into(holder.docImageView);
+       // holder.textInput.setText("HI!");
+        System.out.println("HERE!!!!!!!! 6");
 
 
     }

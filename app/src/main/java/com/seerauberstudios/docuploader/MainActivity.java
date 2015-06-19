@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         //attach layoutmanager to recyclerview
        recyclerView.setLayoutManager(linearLayoutManager);
 
-       // retrieveDocuments();
+        retrieveDocuments();
         // specify an adapter
        // listAdapter = new ListAdapter(textPosts);
         //recyclerView.setAdapter(listAdapter);
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        //retrieveDocuments();
+        retrieveDocuments();
 
     }
 
@@ -330,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList<ParseFile> docs = new ArrayList<ParseFile>(documents.size());
                     int i = 0;
                     for (ParseObject document : documents) {
-                        docs.add(document.getParseFile(ParseConstants.KEY_FILE));
+                        docs.add(document.getParseFile("Document"));
                         i++;
                         System.out.println("HERE!!!!!!!! 2");
 
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
     protected SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-            //retrieveDocuments();
+            retrieveDocuments();
 
         }
     };
