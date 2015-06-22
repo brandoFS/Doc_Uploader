@@ -48,17 +48,9 @@
         android:layout_height="wrap_content"
         android:text="@string/login_loginButton"/>
 
-    <com.digits.sdk.android.DigitsAuthButton
-        android:id="@+id/login_digits_button"
-        android:layout_below="@+id/login_loginButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="10dp"/>
-
     <TextView
         android:id="@+id/login_register"
-        android:layout_below="@+id/login_digits_button"
+        android:layout_below="@+id/login_loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"

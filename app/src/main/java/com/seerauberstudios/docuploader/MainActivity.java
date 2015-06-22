@@ -244,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
 
             String fileName = "document.png";
             file = new ParseFile(fileName, fileBytes);
+            Toast.makeText(MainActivity.this, R.string.uploading_message, Toast.LENGTH_LONG).show();
             file.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
@@ -269,7 +270,6 @@ public class MainActivity extends AppCompatActivity {
         doc.put(ParseConstants.KEY_USERNAME,currentUser.getUsername());
         doc.put(ParseConstants.KEY_REVIEW, false);
         doc.put(ParseConstants.KEY_DOCUMENT, fileForUpload);
-        Toast.makeText(MainActivity.this, R.string.uploading_message, Toast.LENGTH_LONG).show();
 
 
         doc.saveInBackground(new SaveCallback() {

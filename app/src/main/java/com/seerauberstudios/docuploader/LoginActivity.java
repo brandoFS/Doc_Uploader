@@ -32,36 +32,13 @@ public class LoginActivity extends AppCompatActivity {
     @InjectView(R.id.login_password)EditText userPassword;
     @InjectView(R.id.login_progressbar) ProgressBar progressBar;
 
-    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "GZ5z6s0fvwyHmuG9sVe0XbgRz";
-    private static final String TWITTER_SECRET = "zdhyrNqKrviE7abySqzCYUqMWJcw8XlwGJOGSrfqEkwvqXGpBH";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-        Fabric.with(this, new Twitter(authConfig));
-
         setContentView(R.layout.activity_login);
 
         ButterKnife.inject(this);
-
-        DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.login_digits_button);
-        digitsButton.setCallback(new AuthCallback() {
-            @Override
-            public void success(DigitsSession session, String phoneNumber) {
-                // Do something with the session and phone number
-                Toast.makeText(LoginActivity.this, "SUCESS!", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void failure(DigitsException exception) {
-                // Do something on failure
-                Toast.makeText(LoginActivity.this, "Error, something went wrong... Sorry!", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
 
