@@ -3,6 +3,8 @@ package com.seerauberstudios.docuploader.adapters;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.media.Image;
 import android.net.Uri;
 import android.support.v7.widget.CardView;
@@ -15,21 +17,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.ParseFile;
+import com.parse.ParseObject;
 import com.seerauberstudios.docuploader.R;
+import com.seerauberstudios.docuploader.ViewDocumentActivity;
+import com.seerauberstudios.docuploader.util.ParseConstants;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Created by brando on 6/17/15.
  */
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-    private ArrayList<ParseFile> mDataset = new ArrayList<ParseFile>();
+    private ArrayList<ParseObject> mDataset = new ArrayList<ParseObject>();
     Context context1;
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textInput;
         public CardView cardItemView;
         public ImageView docImageView;
@@ -39,22 +45,16 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
         public ViewHolder(View v) {
             super(v);
 
-            cardItemView = (CardView)v.findViewById(R.id.card_view);
-           // textInput = (TextView)v.findViewById(R.id.listitem_text);
-            docImageView = (ImageView)v.findViewById(R.id.listitem_image);
-
+            cardItemView = (CardView) v.findViewById(R.id.card_view);
+            textInput = (TextView) v.findViewById(R.id.listitem_text);
+            docImageView = (ImageView) v.findViewById(R.id.listitem_image);
 
         }
-        //Handle clicks
-        @Override
-        public void onClick(View v) {
-                    Toast.makeText(v.getContext(), "Text Copied!", Toast.LENGTH_SHORT).show();
 
-            }
-        }
+    }
 
 
-    public ListAdapter(ArrayList<ParseFile> input, Context context) {
+    public ListAdapter(ArrayList<ParseObject> input, Context context) {
         mDataset = input;
         context1 = context;
     }
@@ -69,12 +69,21 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        Uri fileUri = Uri.parse(mDataset.get(position).getUrl());
-        Picasso.with(context1).load(fileUri.toString()).fit().into(holder.docImageView);
-       // holder.textInput.setText("HI!");
-        System.out.println("HERE!!!!!!!! 6");
-
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+        ParseFile parseFile = mDataset.get(position).getParseFile("Document");
+        Uri fileUri = Uri.parse(parseFile.getUrl());
+        Picasso.with(context1).load(fileUri.toString()).placeholder(R.mipmap.ic_insert_drive_file_black_36dp).fit().into(holder.docImageView);
+        holder.textInput.setText(context1.getString(R.string.doc_status_title) + " " + (mDataset.get(position).getBoolean(ParseConstants.KEY_REVIEW) ? context1.getString(R.string.doc_status_reviewedapproved) : context1.getString(R.string.doc_status_waitingreview)));
+        holder.cardItemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(),ViewDocumentActivity.class );
+                ParseFile file = mDataset.get(position).getParseFile("Document");
+                Uri fileUri = Uri.parse(file.getUrl());
+                intent.setData(fileUri);
+                v.getContext().startActivity(intent);
+            }
+        });
 
     }
 
@@ -83,8 +92,9 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     public int getItemCount() {
         return mDataset.size();
     }
-    //Add item remeber to
-    public void addItem(ParseFile item){
+
+    //Add item remeber
+    public void addItem(ParseObject item){
         mDataset.add(mDataset.size(), item);
         notifyItemInserted(mDataset.size());
         notifyDataSetChanged();
@@ -95,6 +105,12 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
         int position = mDataset.indexOf(item);
         mDataset.remove(position);
         notifyItemRemoved(position);
+        notifyDataSetChanged();
+    }
+
+    public void refill(List<ParseObject> documents){
+        mDataset.clear();
+        mDataset.addAll(documents);
         notifyDataSetChanged();
     }
 

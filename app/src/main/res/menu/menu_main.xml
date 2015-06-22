@@ -2,13 +2,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.seerauberstudios.docuploader.MainActivity">
+    <item android:id="@+id/action_upload"
+        android:title="@string/action_upload"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
     <item android:id="@+id/action_logout"
         android:title="@string/action_logout"
         android:orderInCategory="100"
         app:showAsAction="never" />
     <item android:id="@+id/action_camera"
-        android:title="@string/menu_camera"
-        android:icon="@mipmap/ic_photo_camera_black_24dp"
+        android:title="@string/action_camera"
+        android:icon="@mipmap/ic_note_add_black_24dp"
         app:showAsAction="always"
         />
 </menu>

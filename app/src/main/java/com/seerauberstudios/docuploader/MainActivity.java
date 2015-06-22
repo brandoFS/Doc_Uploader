@@ -1,6 +1,5 @@
 package com.seerauberstudios.docuploader;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,17 +8,18 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.internal.app.ToolbarActionBar;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseAnalytics;
@@ -45,8 +45,8 @@ import butterknife.InjectView;
 
 public class MainActivity extends AppCompatActivity {
 
-    @InjectView(R.id.mainactivity_recycler_view) RecyclerView recyclerView;;
-
+    @InjectView(R.id.mainactivity_recycler_view) RecyclerView recyclerView;
+    @InjectView(R.id.main_emptylayout)   LinearLayout emptyLayoutContainer;
 
     public final static String TAG = MainActivity.class.getSimpleName();
     public static final int TAKE_PHOTO_REQUEST = 0;
@@ -61,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ListAdapter listAdapter;
-    private LinearLayoutManager linearLayoutManager;
+    private GridLayoutManager gridLayoutManager;
+    protected SwipeRefreshLayout swipeRefreshLayout;
 
 
     @Override
@@ -73,29 +74,30 @@ public class MainActivity extends AppCompatActivity {
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
 
-       currentUser = ParseUser.getCurrentUser();
+        currentUser = ParseUser.getCurrentUser();
         if(currentUser == null) {
             navigateToLogin();
         }
         else{
             Log.i(TAG, currentUser.getUsername());
+            retrieveDocuments();
         }
 
 
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setReverseLayout(true);
-        linearLayoutManager.setStackFromEnd(true);
+        gridLayoutManager = new GridLayoutManager(this,2);
 
         //attach layoutmanager to recyclerview
-       recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setLayoutManager(gridLayoutManager);
 
-        retrieveDocuments();
-        // specify an adapter
-       // listAdapter = new ListAdapter(textPosts);
-        //recyclerView.setAdapter(listAdapter);
+
+
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(onRefreshListener);
+        swipeRefreshLayout.setColorSchemeColors(R.color.swipeRefresh1, R.color.swipeRefresh2,R.color.swipeRefresh3,R.color.swipeRefresh4);
+
 
 
     }
@@ -105,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish();
     }
 
     @Override
@@ -123,11 +126,13 @@ public class MainActivity extends AppCompatActivity {
                 navigateToLogin();
                 break;
             case R.id.action_camera:
+            case R.id.action_upload:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setItems(R.array.camera_choices, DialogListener);
                 AlertDialog dialog = builder.create();
                 dialog.show();
                 break;
+
         }
 
 
@@ -217,18 +222,14 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultCode == RESULT_OK){
 
-
             if(requestCode == PICK_PHOTO_REQUEST){
                 if(data == null){
                     Toast.makeText(MainActivity.this, getString(R.string.error), Toast.LENGTH_LONG).show();
-
                 }
                 else{
                     MediaURI = data.getData();
-
                 }
                 Log.i(TAG, "Media URI: " + MediaURI);
-
             }
             else {
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -238,8 +239,7 @@ public class MainActivity extends AppCompatActivity {
 
             byte[] fileBytes = FileHelper.getByteArrayFromFile(this, MediaURI);
             if(fileBytes == null){
-                System.out.println("Filebytes is NULL");
-                //return null;
+                Log.e(TAG,"Filebytes is NULL");
             }
 
             String fileName = "document.png";
@@ -253,14 +253,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
-
-
-
-
         }
         else if (resultCode != RESULT_CANCELED){
             Toast.makeText(MainActivity.this, getString(R.string.error), Toast.LENGTH_LONG).show();
-
         }
 
 
@@ -268,20 +263,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-        private void uploadDoc(ParseFile fileForUpload) {
+    private void uploadDoc(ParseFile fileForUpload) {
         ParseObject doc = new ParseObject("doc");
         doc.put(ParseConstants.KEY_USER_ID, currentUser.getObjectId());
         doc.put(ParseConstants.KEY_USERNAME,currentUser.getUsername());
-        doc.put("Document", fileForUpload);
+        doc.put(ParseConstants.KEY_REVIEW, false);
+        doc.put(ParseConstants.KEY_DOCUMENT, fileForUpload);
+        Toast.makeText(MainActivity.this, R.string.uploading_message, Toast.LENGTH_LONG).show();
+
 
         doc.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 if (e == null) {
                     //Success
-                    Toast.makeText(MainActivity.this, R.string.upload_success_message, Toast.LENGTH_LONG);
+                    Toast.makeText(MainActivity.this, R.string.upload_success_message, Toast.LENGTH_LONG).show();
+                    retrieveDocuments();
                 } else {
-                    System.out.println("EXCEPTION!!!!!!!! " + e.toString());
+                    Log.e(TAG, e.toString());
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage(getString(R.string.error))
                             .setTitle(getString(R.string.sorry_title))
@@ -294,13 +293,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        retrieveDocuments();
-
-    }
 
     private void retrieveDocuments() {
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("doc");
@@ -309,20 +301,18 @@ public class MainActivity extends AppCompatActivity {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> documents, ParseException e) {
-
-
-               /* if(swipeRefreshLayout.isRefreshing())
+                if(swipeRefreshLayout.isRefreshing())
                 {
                     swipeRefreshLayout.setRefreshing(false);
-                }*/
-
-
+                }
                 if (e == null) {
-                    //success
-                    ArrayList<ParseFile> docs = new ArrayList<ParseFile>(documents.size());
+                    if(!documents.isEmpty() ) {
+                        emptyLayoutContainer.setVisibility(View.GONE);
+                    }
+                    ArrayList<ParseObject> docs = new ArrayList<ParseObject>(documents.size());
                     int i = 0;
                     for (ParseObject document : documents) {
-                        docs.add(document.getParseFile("Document"));
+                        docs.add(document);
                         i++;
                     }
                     if(recyclerView.getAdapter() == null) {
@@ -330,9 +320,8 @@ public class MainActivity extends AppCompatActivity {
                         recyclerView.setAdapter(listAdapter);
                     }
                     else{
-                       // refill the adapter
-                        recyclerView.getAdapter().notifyDataSetChanged();
-                        //((MessageAdapter)getListView().getAdapter()).refill(Messages);
+                        // refill the adapter
+                        listAdapter.refill(docs);
                     }
 
                 }
@@ -345,7 +334,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onRefresh() {
             retrieveDocuments();
-
         }
     };
 

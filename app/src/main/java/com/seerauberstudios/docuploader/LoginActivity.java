@@ -5,7 +5,9 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.digits.sdk.android.AuthCallback;
@@ -28,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @InjectView(R.id.login_username)EditText userName;
     @InjectView(R.id.login_password)EditText userPassword;
+    @InjectView(R.id.login_progressbar) ProgressBar progressBar;
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
     private static final String TWITTER_KEY = "GZ5z6s0fvwyHmuG9sVe0XbgRz";
@@ -69,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.login_loginButton)
-    void Register(){
+    void login(){
         String username = userName.getText().toString();
         String password = userPassword.getText().toString();
 
@@ -85,14 +88,13 @@ public class LoginActivity extends AppCompatActivity {
         }
         else {
             //Login
-            setProgressBarIndeterminateVisibility(true);
+            progressBar.setVisibility(View.VISIBLE);
             ParseUser.logInInBackground(username, password, new LogInCallback() {
                 @Override
                 public void done(ParseUser parseUser, ParseException e) {
-                    setProgressBarIndeterminateVisibility(false);
+                    progressBar.setVisibility(View.GONE);
 
-                    if(e == null){
-                        //Success!
+                    if (e == null) {                        //Success!
 
                         DocUploaderApplication.updateParseInstallation(parseUser);
 
@@ -100,8 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                    }
-                    else{
+                    } else {
                         AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
                         builder.setMessage(e.getMessage()).setTitle(R.string.login_error_title).setPositiveButton(android.R.string.ok, null);
                         AlertDialog dialog = builder.create();
@@ -112,7 +113,7 @@ public class LoginActivity extends AppCompatActivity {
 
         }
 
-        }
+    }
 
 
 
